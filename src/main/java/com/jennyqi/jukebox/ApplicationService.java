@@ -23,6 +23,7 @@ public class ApplicationService {
     String url = "http://my-json-server.typicode.com/touchtunes/tech-assignment/settings";
     ResponseEntity<SettingsWrapper> response = restTemplate.getForEntity(url, SettingsWrapper.class);
     SettingsWrapper wrapper = response.getBody();
+
     if (wrapper != null) {
       for (Setting setting: wrapper.settings()) {
         if (setting.id().equals(id)) {
@@ -30,6 +31,7 @@ public class ApplicationService {
         }
       }
     }
+
     return null;
   }
 
@@ -37,6 +39,24 @@ public class ApplicationService {
     String url = "https://my-json-server.typicode.com/touchtunes/tech-assignment/jukes";
     ResponseEntity<Jukebox[]> response = restTemplate.getForEntity(url, Jukebox[].class);
     return Arrays.asList(response.getBody());
+  }
+
+  public List<Jukebox> fetchJukeboxes(String model) {
+    String url = "https://my-json-server.typicode.com/touchtunes/tech-assignment/jukes";
+    ResponseEntity<Jukebox[]> response = restTemplate.getForEntity(url, Jukebox[].class);
+    Jukebox[] allJukeboxes = response.getBody();
+
+    if (allJukeboxes != null) {
+      List<Jukebox> jukeboxesOfModel = new ArrayList<>();
+      for (Jukebox jukebox : allJukeboxes) {
+        if (jukebox.model().equalsIgnoreCase(model)) {
+          jukeboxesOfModel.add(jukebox);
+        }
+      }
+      return jukeboxesOfModel;
+    }
+
+    return null;
   }
 
   public List<Jukebox> selectJukeboxes(Setting setting, List<Jukebox> jukeboxes) {
