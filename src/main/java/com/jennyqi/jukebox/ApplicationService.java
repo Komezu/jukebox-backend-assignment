@@ -1,8 +1,11 @@
 package com.jennyqi.jukebox;
 
 import com.jennyqi.jukebox.models.*;
+import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
@@ -16,19 +19,41 @@ public class ApplicationService {
     this.restTemplate = restTemplate;
   }
 
-  public Setting findRequestedSetting(String id) {
-    List<Setting> allSettings = fetchSettings();
-    for (Setting setting : allSettings) {
-      if (setting.id().equals(id))
-        return setting;
+  public Setting fetchRequestedSetting(String id) {
+    String url = "http://my-json-server.typicode.com/touchtunes/tech-assignment/settings";
+    ResponseEntity<SettingsWrapper> response = restTemplate.getForEntity(url, SettingsWrapper.class);
+    SettingsWrapper wrapper = response.getBody();
+    if (wrapper != null) {
+      for (Setting setting: wrapper.settings()) {
+        if (setting.id().equals(id)) {
+          return setting;
+        }
+      }
     }
     return null;
   }
 
-  private List<Setting> fetchSettings() {
-    String url = "http://my-json-server.typicode.com/touchtunes/tech-assignment/settings";
-    SettingsWrapper wrapper = restTemplate.getForObject(url, SettingsWrapper.class);
-    return wrapper == null ? null : wrapper.settings();
+  public List<Jukebox> fetchJukeboxes() {
+    String url = "https://my-json-server.typicode.com/touchtunes/tech-assignment/jukes";
+    ResponseEntity<Jukebox[]> response = restTemplate.getForEntity(url, Jukebox[].class);
+    return Arrays.asList(response.getBody());
+  }
+
+  public List<Jukebox> selectJukeboxes(Setting setting, List<Jukebox> jukeboxes) {
+    List<Jukebox> selectedJukeboxes = new ArrayList<>();
+    List<String> requiredComponents = setting.requires();
+
+    for (Jukebox jukebox : jukeboxes) {
+      List<String> jukeboxComponents = new ArrayList<>();
+      for (Component component : jukebox.components()) {
+        jukeboxComponents.add(component.name());
+      }
+      if (jukeboxComponents.containsAll(requiredComponents)) {
+        selectedJukeboxes.add(jukebox);
+      }
+    }
+
+    return selectedJukeboxes;
   }
 
 }

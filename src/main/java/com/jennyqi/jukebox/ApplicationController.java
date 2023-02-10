@@ -1,6 +1,7 @@
 package com.jennyqi.jukebox;
 
 import com.jennyqi.jukebox.models.*;
+import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -16,9 +17,11 @@ public class ApplicationController {
     this.applicationService = applicationService;
   }
 
-  @GetMapping("/settings/{id}")
-  public Setting getSetting(@PathVariable("id") String id) {
-    return applicationService.findRequestedSetting(id);
+  @GetMapping("/{settingId}")
+  public List<Jukebox> getJukeboxesSupportingSetting(@PathVariable("settingId") String settingId) {
+    Setting requestedSetting = applicationService.fetchRequestedSetting(settingId);
+    List<Jukebox> allJukeboxes = applicationService.fetchJukeboxes();
+    return applicationService.selectJukeboxes(requestedSetting, allJukeboxes);
   }
 
 }
