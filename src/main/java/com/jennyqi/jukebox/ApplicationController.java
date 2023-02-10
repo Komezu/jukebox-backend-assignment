@@ -17,19 +17,23 @@ public class ApplicationController {
     this.applicationService = applicationService;
   }
 
-  @GetMapping("/jukeboxes/v1")
+  @GetMapping("/v1/jukeboxes")
   public List<Jukebox> getJukeboxesFromSetting(@RequestParam String settingId,
-                                               @RequestParam(required = false) String model) {
+                                               @RequestParam(required = false) String model,
+                                               @RequestParam(required = false, defaultValue = "0") int offset,
+                                               @RequestParam(required = false, defaultValue = "10") int limit) {
     Setting requestedSetting = applicationService.fetchRequestedSetting(settingId);
-    List<Jukebox> jukeboxes;
 
+    List<Jukebox> jukeboxes;
     if (model != null) {
       jukeboxes = applicationService.fetchJukeboxes(model);
     } else {
       jukeboxes = applicationService.fetchJukeboxes();
     }
 
-    return applicationService.selectJukeboxes(requestedSetting, jukeboxes);
+    List<Jukebox> selectedJukeboxes = applicationService.selectJukeboxes(requestedSetting, jukeboxes);
+
+    return applicationService.selectJukeboxesInRange(selectedJukeboxes, offset, limit);
   }
 
 }

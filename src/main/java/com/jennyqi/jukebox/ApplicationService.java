@@ -76,4 +76,9 @@ public class ApplicationService {
     return selectedJukeboxes;
   }
 
+  public List<Jukebox> selectJukeboxesInRange(List<Jukebox> jukeboxes, int offset, int limit) {
+    int end = offset + limit > jukeboxes.size() ? jukeboxes.size() : offset + limit;
+    return jukeboxes.subList(offset, end);
+  }
+
 }
