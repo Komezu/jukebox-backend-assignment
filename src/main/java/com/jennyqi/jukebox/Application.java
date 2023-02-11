@@ -13,8 +13,8 @@ public class Application {
 	}
 
   @Bean
-  public RestTemplate restTemplate() {
-    return new RestTemplate();
+  RestTemplate restTemplate() {
+      return new RestTemplate();
   }
 
 }

@@ -4,8 +4,6 @@ import com.jennyqi.jukebox.models.*;
 import java.util.List;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.MissingServletRequestParameterException;
-import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -20,28 +18,22 @@ public class ApplicationController {
   }
 
   @GetMapping("/v1/jukeboxes")
-  public ResponseEntity<?> getJukeboxesFromSetting(
-                                                    @RequestParam String settingId,
-                                                    @RequestParam(required = false) String model,
-                                                    @RequestParam(required = false, defaultValue = "0") int offset,
-                                                    @RequestParam(required = false, defaultValue = "10") int limit) {
-    if (settingId == null || settingId.isEmpty()) {
-      ErrorResponse error = new ErrorResponse(400, "Bad Request - Missing settingId");
-      return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
+  public ResponseEntity<?> getJukeboxesFromSetting(@RequestParam String settingId,
+                                                   @RequestParam(required = false) String model,
+                                                   @RequestParam(required = false, defaultValue = "0") int offset,
+                                                   @RequestParam(required = false, defaultValue = "10") int limit)
+                                                   throws MockedApiCallException {
+    if (settingId.isEmpty()) {
+      throw new MockedApiCallException(400, "Bad Request - Missing settingId");
     }
 
-    DataResponse<?> settingResponse = applicationService.fetchRequestedSetting(settingId);
-    if (settingResponse.error() != null) {
-      int statusCode = settingResponse.error().status();
-      return new ResponseEntity<>(settingResponse.error(), HttpStatus.valueOf(statusCode));
-    }
-    Setting requestedSetting = (Setting) settingResponse.data();
+    Setting requestedSetting = applicationService.fetchRequestedSetting(settingId);
 
     List<Jukebox> jukeboxes;
-    if (model != null) {
-      jukeboxes = applicationService.fetchJukeboxes(model);
-    } else {
+    if (model == null || model.isEmpty()) {
       jukeboxes = applicationService.fetchJukeboxes();
+    } else {
+      jukeboxes = applicationService.fetchJukeboxes(model);
     }
 
     List<Jukebox> selectedJukeboxes = applicationService.selectJukeboxes(requestedSetting, jukeboxes);
@@ -52,12 +44,6 @@ public class ApplicationController {
     );
 
     return new ResponseEntity<>(response, HttpStatus.OK);
-  }
-
-  @ExceptionHandler(MissingServletRequestParameterException.class)
-  public ResponseEntity<ErrorResponse> handleMissingRequestParamException(MissingServletRequestParameterException ex) {
-    ErrorResponse error = new ErrorResponse(400, "Bad Request - Missing " + ex.getParameterName());
-    return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
   }
 
 }

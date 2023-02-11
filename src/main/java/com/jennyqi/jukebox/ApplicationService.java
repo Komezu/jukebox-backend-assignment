@@ -14,78 +14,81 @@ import org.springframework.web.client.RestTemplate;
 public class ApplicationService {
 
   private final RestTemplate restTemplate;
+  private final String settingsUrl = "http://my-json-server.typicode.com/touchtunes/tech-assignment/settings";
+  private final String jukeboxesUrl = "https://my-json-server.typicode.com/touchtunes/tech-assignment/jukes";
 
   public ApplicationService(RestTemplate restTemplate) {
     this.restTemplate = restTemplate;
   }
 
-  public DataResponse<?> fetchRequestedSetting(String settingId) {
-    String url = "http://my-json-server.typicode.com/touchtunes/tech-assignment/settings";
-
+  public Setting fetchRequestedSetting(String settingId) throws MockedApiCallException {
     try {
-      ResponseEntity<SettingsWrapper> response = restTemplate.getForEntity(url, SettingsWrapper.class);
+      ResponseEntity<SettingsWrapper> response = restTemplate.getForEntity(settingsUrl, SettingsWrapper.class);
       SettingsWrapper wrapper = response.getBody();
-
-      if (wrapper == null) {
-        ErrorResponse error = new ErrorResponse(502, "Bad Gateway - Unable to fetch settings");
-        return new DataResponse<>(null, error);
+      if (wrapper == null || wrapper.settings().isEmpty()) {
+        throw new MockedApiCallException(502, "Bad Gateway - Unable to fetch settings");
       }
-
       return findSettingById(settingId, wrapper.settings());
     }
     catch(HttpClientErrorException e) {
-      ErrorResponse error = new ErrorResponse(500, "Internal Server Error - Unable to fetch settings");
-      return new DataResponse<>(null, error);
+      throw new MockedApiCallException(500, "Internal Server Error - Unable to fetch settings");
     }
     catch(HttpServerErrorException e) {
-      ErrorResponse error = new ErrorResponse(502, "Bad Gateway - Unable to fetch settings");
-      return new DataResponse<>(null, error);
+      throw new MockedApiCallException(502, "Bad Gateway - Unable to fetch settings");
     }
   }
 
-  private DataResponse<?> findSettingById(String id, List<Setting> settings) {
+  private Setting findSettingById(String id, List<Setting> settings) throws MockedApiCallException {
     for (Setting setting: settings) {
       if (setting.id().equals(id)) {
-        return new DataResponse<Setting>(setting, null);
+        return setting;
       }
     }
-    ErrorResponse error = new ErrorResponse(404, "Requested Setting Not Found");
-    return new DataResponse<>(null, error);
+
+    throw new MockedApiCallException(404, "Requested Setting Not Found");
   }
 
-  public List<Jukebox> fetchJukeboxes() {
-    String url = "https://my-json-server.typicode.com/touchtunes/tech-assignment/jukes";
-    ResponseEntity<Jukebox[]> response = restTemplate.getForEntity(url, Jukebox[].class);
-    return Arrays.asList(response.getBody());
-  }
-
-  public List<Jukebox> fetchJukeboxes(String model) {
-    String url = "https://my-json-server.typicode.com/touchtunes/tech-assignment/jukes";
-    ResponseEntity<Jukebox[]> response = restTemplate.getForEntity(url, Jukebox[].class);
-    Jukebox[] allJukeboxes = response.getBody();
-
-    if (allJukeboxes != null) {
-      List<Jukebox> jukeboxesOfModel = new ArrayList<>();
-      for (Jukebox jukebox : allJukeboxes) {
-        if (jukebox.model().equalsIgnoreCase(model)) {
-          jukeboxesOfModel.add(jukebox);
-        }
+  public List<Jukebox> fetchJukeboxes() throws MockedApiCallException {
+    try {
+      ResponseEntity<Jukebox[]> response = restTemplate.getForEntity(jukeboxesUrl, Jukebox[].class);
+      Jukebox[] jukeboxes = response.getBody();
+      if (jukeboxes == null || jukeboxes.length == 0) {
+        throw new MockedApiCallException(502, "Bad Gateway - Unable to fetch jukeboxes");
       }
-      return jukeboxesOfModel;
+      return Arrays.asList(jukeboxes);
+    }
+    catch(HttpClientErrorException e) {
+      throw new MockedApiCallException(500, "Internal Server Error - Unable to fetch jukeboxes");
+    }
+    catch(HttpServerErrorException e) {
+      throw new MockedApiCallException(502, "Bad Gateway - Unable to fetch jukeboxes");
+    }
+  }
+
+  public List<Jukebox> fetchJukeboxes(String model) throws MockedApiCallException {
+    List<Jukebox> allJukeboxes = fetchJukeboxes();
+    List<Jukebox> jukeboxesOfModel = new ArrayList<>();
+
+    for (Jukebox jukebox : allJukeboxes) {
+      if (jukebox.model().equalsIgnoreCase(model)) {
+        jukeboxesOfModel.add(jukebox);
+      }
     }
 
-    return null;
+    return jukeboxesOfModel;
   }
 
   public List<Jukebox> selectJukeboxes(Setting setting, List<Jukebox> jukeboxes) {
-    List<Jukebox> selectedJukeboxes = new ArrayList<>();
     List<String> requiredComponents = setting.requires();
+    List<Jukebox> selectedJukeboxes = new ArrayList<>();
 
     for (Jukebox jukebox : jukeboxes) {
       List<String> jukeboxComponents = new ArrayList<>();
+
       for (Component component : jukebox.components()) {
         jukeboxComponents.add(component.name());
       }
+
       if (jukeboxComponents.containsAll(requiredComponents)) {
         selectedJukeboxes.add(jukebox);
       }
@@ -95,6 +98,10 @@ public class ApplicationService {
   }
 
   public List<Jukebox> selectJukeboxesInRange(List<Jukebox> jukeboxes, int offset, int limit) {
+    if (offset >= jukeboxes.size()) {
+      return new ArrayList<>();
+    }
+
     int end = offset + limit > jukeboxes.size() ? jukeboxes.size() : offset + limit;
     return jukeboxes.subList(offset, end);
   }
