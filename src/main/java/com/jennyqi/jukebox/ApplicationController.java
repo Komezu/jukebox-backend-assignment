@@ -2,9 +2,10 @@ package com.jennyqi.jukebox;
 
 import com.jennyqi.jukebox.models.*;
 import java.util.List;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.MissingServletRequestParameterException;
+import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -14,18 +15,27 @@ public class ApplicationController {
 
   private final ApplicationService applicationService;
 
-  @Autowired
   public ApplicationController(ApplicationService applicationService) {
     this.applicationService = applicationService;
   }
 
   @GetMapping("/v1/jukeboxes")
-  public ResponseEntity<PaginatedResponse<Jukebox>> getJukeboxesFromSetting(
+  public ResponseEntity<?> getJukeboxesFromSetting(
                                                     @RequestParam String settingId,
                                                     @RequestParam(required = false) String model,
                                                     @RequestParam(required = false, defaultValue = "0") int offset,
                                                     @RequestParam(required = false, defaultValue = "10") int limit) {
-    Setting requestedSetting = applicationService.fetchRequestedSetting(settingId);
+    if (settingId == null || settingId.isEmpty()) {
+      ErrorResponse error = new ErrorResponse(400, "Bad Request - Missing settingId");
+      return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
+    }
+
+    DataResponse<?> settingResponse = applicationService.fetchRequestedSetting(settingId);
+    if (settingResponse.error() != null) {
+      int statusCode = settingResponse.error().status();
+      return new ResponseEntity<>(settingResponse.error(), HttpStatus.valueOf(statusCode));
+    }
+    Setting requestedSetting = (Setting) settingResponse.data();
 
     List<Jukebox> jukeboxes;
     if (model != null) {
@@ -42,6 +52,12 @@ public class ApplicationController {
     );
 
     return new ResponseEntity<>(response, HttpStatus.OK);
+  }
+
+  @ExceptionHandler(MissingServletRequestParameterException.class)
+  public ResponseEntity<ErrorResponse> handleMissingRequestParamException(MissingServletRequestParameterException ex) {
+    ErrorResponse error = new ErrorResponse(400, "Bad Request - Missing " + ex.getParameterName());
+    return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
   }
 
 }
