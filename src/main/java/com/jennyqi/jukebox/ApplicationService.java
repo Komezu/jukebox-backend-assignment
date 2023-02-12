@@ -3,12 +3,16 @@ package com.jennyqi.jukebox;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.RestTemplate;
+
+import com.jennyqi.jukebox.exception.MockedApiCallException;
 import com.jennyqi.jukebox.model.*;
+import com.jennyqi.jukebox.response.PaginatedResponse;
 
 @Service
 public class ApplicationService {

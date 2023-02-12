@@ -1,4 +1,4 @@
-package com.jennyqi.jukebox;
+package com.jennyqi.jukebox.exception;
 
 public class MockedApiCallException extends Exception {
 

@@ -1,4 +1,4 @@
-package com.jennyqi.jukebox;
+package com.jennyqi.jukebox.exception;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -6,10 +6,11 @@ import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
-import com.jennyqi.jukebox.model.ErrorResponse;
+
+import com.jennyqi.jukebox.response.ErrorResponse;
 
 @ControllerAdvice
-public class ApplicationErrorHandler {
+public class CustomExceptionHandler {
 
   @ExceptionHandler(MissingServletRequestParameterException.class)
   public ResponseEntity<ErrorResponse> handleMissingRequestParamException(MissingServletRequestParameterException ex) {
