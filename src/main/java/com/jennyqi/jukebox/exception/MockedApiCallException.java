@@ -1,6 +1,6 @@
 package com.jennyqi.jukebox.exception;
 
-public class MockedApiCallException extends Exception {
+public class MockedApiCallException extends RuntimeException {
 
   private final int status;
 

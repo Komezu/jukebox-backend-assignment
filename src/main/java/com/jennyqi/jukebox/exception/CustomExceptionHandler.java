@@ -13,20 +13,20 @@ import com.jennyqi.jukebox.response.ErrorResponse;
 public class CustomExceptionHandler {
 
   @ExceptionHandler(MissingServletRequestParameterException.class)
-  public ResponseEntity<ErrorResponse> handleMissingRequestParamException(MissingServletRequestParameterException ex) {
+  protected ResponseEntity<ErrorResponse> handleMissingRequestParamException(MissingServletRequestParameterException ex) {
     ErrorResponse error = new ErrorResponse(400, "Bad Request - Missing " + ex.getParameterName());
     return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
   }
 
   @ExceptionHandler(MethodArgumentTypeMismatchException.class)
-  public ResponseEntity<ErrorResponse> handleMethodArgTypeMismatchException(MethodArgumentTypeMismatchException ex) {
+  protected ResponseEntity<ErrorResponse> handleMethodArgTypeMismatchException(MethodArgumentTypeMismatchException ex) {
     String message = "Bad Request - " + ex.getName() + " should be of type " + ex.getRequiredType();
     ErrorResponse error = new ErrorResponse(400, message);
     return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
   }
 
   @ExceptionHandler(MockedApiCallException.class)
-  public ResponseEntity<ErrorResponse> handleMockedApiCallException(MockedApiCallException ex) {
+  protected ResponseEntity<ErrorResponse> handleMockedApiCallException(MockedApiCallException ex) {
     ErrorResponse error = new ErrorResponse(ex.getStatus(), ex.getMessage());
     return new ResponseEntity<>(error, HttpStatus.valueOf(ex.getStatus()));
   }

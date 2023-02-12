@@ -9,7 +9,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.jennyqi.jukebox.exception.MockedApiCallException;
 import com.jennyqi.jukebox.model.*;
 import com.jennyqi.jukebox.response.PaginatedResponse;
 
@@ -28,7 +27,7 @@ public class ApplicationController {
                                                     @RequestParam(required = false) String model,
                                                     @RequestParam(required = false, defaultValue = "0") int offset,
                                                     @RequestParam(required = false, defaultValue = "10") int limit)
-                                                    throws MissingServletRequestParameterException, MockedApiCallException {
+                                                    throws MissingServletRequestParameterException {
     if (settingId.isEmpty()) {
       throw new MissingServletRequestParameterException("settingId", "String");
     }

@@ -25,7 +25,7 @@ public class ApplicationService {
     this.restTemplate = restTemplate;
   }
 
-  public Setting fetchRequestedSetting(String settingId) throws MockedApiCallException {
+  public Setting fetchRequestedSetting(String settingId) {
     try {
       ResponseEntity<SettingsWrapper> response = restTemplate.getForEntity(settingsUrl, SettingsWrapper.class);
       SettingsWrapper wrapper = response.getBody();
@@ -44,7 +44,7 @@ public class ApplicationService {
     }
   }
 
-  private Setting findSettingById(String id, List<Setting> settings) throws MockedApiCallException {
+  private Setting findSettingById(String id, List<Setting> settings) {
     for (Setting setting: settings) {
       if (setting.id().equals(id)) {
         return setting;
@@ -53,7 +53,7 @@ public class ApplicationService {
     throw new MockedApiCallException(404, "Not Found - Invalid setting");
   }
 
-  public List<Jukebox> fetchJukeboxes() throws MockedApiCallException {
+  public List<Jukebox> fetchJukeboxes() {
     try {
       ResponseEntity<Jukebox[]> response = restTemplate.getForEntity(jukeboxesUrl, Jukebox[].class);
       Jukebox[] jukeboxes = response.getBody();
@@ -72,7 +72,7 @@ public class ApplicationService {
     }
   }
 
-  public List<Jukebox> fetchJukeboxes(String model) throws MockedApiCallException {
+  public List<Jukebox> fetchJukeboxes(String model) {
     List<Jukebox> allJukeboxes = fetchJukeboxes();
     List<Jukebox> jukeboxesOfModel = new ArrayList<>();
 
