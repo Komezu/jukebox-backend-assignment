@@ -20,6 +20,8 @@ public class ApplicationService {
   private final RestTemplate restTemplate;
   private final String settingsUrl = "http://my-json-server.typicode.com/touchtunes/tech-assignment/settings";
   private final String jukeboxesUrl = "https://my-json-server.typicode.com/touchtunes/tech-assignment/jukes";
+  private final int defaultOffset = 0;
+  private final int defaultLimit = 10;
 
   public ApplicationService(RestTemplate restTemplate) {
     this.restTemplate = restTemplate;
@@ -100,8 +102,10 @@ public class ApplicationService {
       }
     }
 
-    List<Jukebox> selectedJukeboxes = selectJukeboxesInRange(compatibleJukeboxes, offset, limit);
+    offset = offset < 0 ? defaultOffset : offset;
+    limit = limit <= 0 ? defaultLimit : limit;
 
+    List<Jukebox> selectedJukeboxes = selectJukeboxesInRange(compatibleJukeboxes, offset, limit);
     return formatPaginatedResponse(selectedJukeboxes, compatibleJukeboxes.size(), offset, limit);
   }
 
