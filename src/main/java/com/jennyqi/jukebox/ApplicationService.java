@@ -1,6 +1,5 @@
 package com.jennyqi.jukebox;
 
-import com.jennyqi.jukebox.models.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -9,6 +8,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.RestTemplate;
+import com.jennyqi.jukebox.model.*;
 
 @Service
 public class ApplicationService {
@@ -25,15 +25,17 @@ public class ApplicationService {
     try {
       ResponseEntity<SettingsWrapper> response = restTemplate.getForEntity(settingsUrl, SettingsWrapper.class);
       SettingsWrapper wrapper = response.getBody();
+
       if (wrapper == null || wrapper.settings().isEmpty()) {
         throw new MockedApiCallException(502, "Bad Gateway - Unable to fetch settings");
       }
+
       return findSettingById(settingId, wrapper.settings());
     }
-    catch(HttpClientErrorException e) {
+    catch(HttpClientErrorException ex) {
       throw new MockedApiCallException(500, "Internal Server Error - Unable to fetch settings");
     }
-    catch(HttpServerErrorException e) {
+    catch(HttpServerErrorException ex) {
       throw new MockedApiCallException(502, "Bad Gateway - Unable to fetch settings");
     }
   }
@@ -44,23 +46,24 @@ public class ApplicationService {
         return setting;
       }
     }
-
-    throw new MockedApiCallException(404, "Requested Setting Not Found");
+    throw new MockedApiCallException(404, "Not Found - Invalid setting");
   }
 
   public List<Jukebox> fetchJukeboxes() throws MockedApiCallException {
     try {
       ResponseEntity<Jukebox[]> response = restTemplate.getForEntity(jukeboxesUrl, Jukebox[].class);
       Jukebox[] jukeboxes = response.getBody();
+
       if (jukeboxes == null || jukeboxes.length == 0) {
         throw new MockedApiCallException(502, "Bad Gateway - Unable to fetch jukeboxes");
       }
+
       return Arrays.asList(jukeboxes);
     }
-    catch(HttpClientErrorException e) {
+    catch(HttpClientErrorException ex) {
       throw new MockedApiCallException(500, "Internal Server Error - Unable to fetch jukeboxes");
     }
-    catch(HttpServerErrorException e) {
+    catch(HttpServerErrorException ex) {
       throw new MockedApiCallException(502, "Bad Gateway - Unable to fetch jukeboxes");
     }
   }
@@ -74,13 +77,12 @@ public class ApplicationService {
         jukeboxesOfModel.add(jukebox);
       }
     }
-
     return jukeboxesOfModel;
   }
 
-  public List<Jukebox> selectJukeboxes(Setting setting, List<Jukebox> jukeboxes) {
+  public PaginatedResponse<Jukebox> findCompatibleJukeboxes(Setting setting, List<Jukebox> jukeboxes, int offset, int limit) {
     List<String> requiredComponents = setting.requires();
-    List<Jukebox> selectedJukeboxes = new ArrayList<>();
+    List<Jukebox> compatibleJukeboxes = new ArrayList<>();
 
     for (Jukebox jukebox : jukeboxes) {
       List<String> jukeboxComponents = new ArrayList<>();
@@ -90,20 +92,30 @@ public class ApplicationService {
       }
 
       if (jukeboxComponents.containsAll(requiredComponents)) {
-        selectedJukeboxes.add(jukebox);
+        compatibleJukeboxes.add(jukebox);
       }
     }
 
-    return selectedJukeboxes;
+    List<Jukebox> selectedJukeboxes = selectJukeboxesInRange(compatibleJukeboxes, offset, limit);
+
+    return formatPaginatedResponse(selectedJukeboxes, compatibleJukeboxes.size(), offset, limit);
   }
 
-  public List<Jukebox> selectJukeboxesInRange(List<Jukebox> jukeboxes, int offset, int limit) {
+  private List<Jukebox> selectJukeboxesInRange(List<Jukebox> jukeboxes, int offset, int limit) {
     if (offset >= jukeboxes.size()) {
       return new ArrayList<>();
     }
 
     int end = offset + limit > jukeboxes.size() ? jukeboxes.size() : offset + limit;
     return jukeboxes.subList(offset, end);
+  }
+
+  private PaginatedResponse<Jukebox> formatPaginatedResponse(List<Jukebox> selectedJukeboxes,
+                                                             int totalCount, int offset, int limit) {
+    int currentPage = (int) Math.ceil((double) offset / limit) + 1;
+    boolean pageNumberEstimated = !(offset % limit == 0);
+
+    return new PaginatedResponse<>(selectedJukeboxes, totalCount, currentPage, pageNumberEstimated, limit);
   }
 
 }

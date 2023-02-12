@@ -1,3 +1,3 @@
-package com.jennyqi.jukebox.models;
+package com.jennyqi.jukebox.model;
 
 public record Component(String name) {}

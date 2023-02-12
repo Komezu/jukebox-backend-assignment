@@ -1,4 +1,4 @@
-package com.jennyqi.jukebox.models;
+package com.jennyqi.jukebox.model;
 
 import java.util.List;
 
