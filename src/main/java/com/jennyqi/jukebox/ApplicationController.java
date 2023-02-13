@@ -28,6 +28,8 @@ public class ApplicationController {
                                                     @RequestParam(required = false, defaultValue = "0") int offset,
                                                     @RequestParam(required = false, defaultValue = "10") int limit)
                                                     throws MissingServletRequestParameterException {
+    // Explicitly throw error if settingId is empty string or only whitespace
+    // If settingId null, exception will be thrown by default as it's a required RequestParam
     if (settingId.isEmpty()) {
       throw new MissingServletRequestParameterException("settingId", "String");
     }
@@ -41,6 +43,7 @@ public class ApplicationController {
       jukeboxes = applicationService.fetchJukeboxes(model);
     }
 
+    // If no offset or limit was specified, default values passed to @RequestParam above will be used
     PaginatedResponse<Jukebox> response = applicationService.findCompatibleJukeboxes(setting, jukeboxes, offset, limit);
 
     return new ResponseEntity<>(response, HttpStatus.OK);

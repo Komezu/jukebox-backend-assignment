@@ -11,6 +11,9 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
+// Integration tests without starting the server (using MockMvc)
+// NOTE: Actual calls to the external mocked APIs are made by the service (not ideal if these APIs can change)
+
 @SpringBootTest
 @AutoConfigureMockMvc
 class ApplicationControllerTest {

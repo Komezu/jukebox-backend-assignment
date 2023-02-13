@@ -25,6 +25,8 @@ import com.jennyqi.jukebox.exception.MockedApiCallException;
 import com.jennyqi.jukebox.model.*;
 import com.jennyqi.jukebox.response.PaginatedResponse;
 
+// Tests with mocked RestTemplate behavior through Mockito (no actual calls to mocked APIs)
+
 @ExtendWith(MockitoExtension.class)
 class ApplicationServiceTest {
 

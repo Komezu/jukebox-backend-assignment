@@ -12,6 +12,7 @@ public class Application {
 		SpringApplication.run(Application.class, args);
 	}
 
+  // Create RestTemplate bean for injection as a dependency in service class
   @Bean
   RestTemplate restTemplate() {
     return new RestTemplate();
