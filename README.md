@@ -15,11 +15,17 @@ The settings and jukeboxes data come from two mocked APIs provided by TouchTunes
 
 ## Run Locally
 
-TODO
+To run this app, clone the repository and execute the following command in the root directory of the app:
 
-TODO
+` ./mvnw spring-boot:run `
 
-TODO
+To run it with Docker instead, execute these commands in the root directory:
+
+` docker build -t jukebox . `
+
+` docker run -p 8080:8080 jukebox `
+
+In either case, the app will start listening on ` localhost:8080 ` for API requests.
 
 ## Endpoint Details
 
@@ -147,8 +153,12 @@ If the API was unable to retrieve settings or jukeboxes information from the thi
 
 ## Running Tests
 
-TODO
+To run the tests for this app, execute the following command in the root directory:
 
-TODO
+` ./mvnw test `
 
-TODO
+Alternatively, a Docker image can be built to run the tests by executing in the root directory:
+
+` docker build -t jukebox:test --target test . `
+
+This will run the tests during the build, and the build will fail if any of the tests fails.
